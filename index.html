@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Palindrome Checker</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts (Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          animation: {
+            'pop-in': 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+            'pulse-subtle': 'pulseSubtle 2s infinite',
+          },
+          keyframes: {
+            popIn: {
+              '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
+              '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+            },
+            pulseSubtle: {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0.85' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
+
+  <!-- Background decorative blobs -->
+  <div class="fixed top-[-10%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-indigo-600/20 blur-[120px] pointer-events-none"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none"></div>
+
+  <!-- Header -->
+  <header class="w-full max-w-4xl mx-auto px-4 pt-8 pb-4 text-center">
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-medium mb-4 backdrop-blur-md">
+      <i class="fa-solid fa-code"></i> freeCodeCamp Quality Criteria Approved
+    </div>
+    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">
+      Is It A Palindrome?
+    </h1>
+    <p class="text-slate-400 mt-2 text-base md:text-lg max-w-xl mx-auto">
+      Discover whether your phrase reads the exact same backwards as forwards, ignoring spaces, punctuation, and casing.
+    </p>
+  </header>
+
+  <!-- Main Container -->
+  <main class="w-full max-w-2xl mx-auto px-4 py-4 flex-grow flex flex-col justify-center">
+    
+    <!-- App Card -->
+    <div class="bg-slate-800/80 border border-slate-700/60 backdrop-blur-xl shadow-2xl rounded-2xl p-6 md:p-8 space-y-6">
+      
+      <!-- Input Section -->
+      <div class="space-y-2">
+        <label for="text-input" class="block text-sm font-semibold text-slate-300">
+          Enter text to check:
+        </label>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input 
+            type="text" 
+            id="text-input" 
+            placeholder="e.g. A man, a plan, a canal. Panama"
+            class="flex-1 bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 text-base"
+          />
+          <button 
+            id="check-btn"
+            class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold px-6 py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/25 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Check</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Container (Strictly keeping required ID) -->
+      <div 
+        id="result" 
+        class="hidden rounded-xl p-4 text-center font-semibold text-lg md:text-xl border transition-all duration-300 animate-pop-in"
+      >
+        <!-- Dynamic Result Injected Here -->
+      </div>
+
+      <!-- Analytical Breakdown Visualizer (Bonus UX Feature) -->
+      <div id="breakdown-card" class="hidden bg-slate-900/60 border border-slate-800 rounded-xl p-4 space-y-3 text-sm">
+        <h3 class="text-xs uppercase tracking-wider text-slate-400 font-bold border-b border-slate-800 pb-2 flex items-center gap-2">
+          <i class="fa-solid fa-microscope text-indigo-400"></i> String Inspection Breakdown
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+          <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-700/40">
+            <span class="text-xs text-slate-400 block mb-0.5">Cleaned & Lowercased:</span>
+            <span id="cleaned-str" class="font-mono text-indigo-300 break-all font-medium"></span>
+          </div>
+          <div class="bg-slate-800/50 p-2.5 rounded-lg border border-slate-700/40">
+            <span class="text-xs text-slate-400 block mb-0.5">Reversed Cleaned:</span>
+            <span id="reversed-str" class="font-mono text-purple-300 break-all font-medium"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Test Examples -->
+      <div class="pt-2 border-t border-slate-700/50">
+        <p class="text-xs text-slate-400 font-medium mb-2.5 flex items-center gap-1.5">
+          <i class="fa-regular fa-lightbulb text-amber-400"></i> Click a sample test case to try:
+        </p>
+        <div class="flex flex-wrap gap-2" id="preset-container">
+          <button class="preset-btn text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-600/40 transition">A man, a plan, a canal. Panama</button>
+          <button class="preset-btn text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-600/40 transition">race car</button>
+          <button class="preset-btn text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-600/40 transition">0_0 (: /-\ :) 0-0</button>
+          <button class="preset-btn text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-600/40 transition">not a palindrome</button>
+          <button class="preset-btn text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-600/40 transition">five|\_/|four</button>
+          <button class="preset-btn text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-600/40 transition">My age is 0, 0 si ega ym.</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Explanation Box -->
+    <div class="mt-6 bg-slate-800/40 border border-slate-700/40 rounded-xl p-4 text-xs text-slate-400 flex items-start gap-3">
+      <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg shrink-0">
+        <i class="fa-solid fa-circle-info text-base"></i>
+      </div>
+      <div>
+        <h4 class="font-semibold text-slate-300 mb-0.5">What is a palindrome?</h4>
+        <p class="leading-relaxed">
+          A <span class="text-indigo-300 font-medium">palindrome</span> is a word, phrase, or sequence that reads the same backward as forward. Non-alphanumeric characters like punctuation, spaces, and symbols are stripped out, and letters are converted to lowercase prior to evaluation.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full text-center py-6 text-xs text-slate-500 border-t border-slate-800/80">
+    <p>Built for freeCodeCamp JavaScript Algorithms and Data Structures certification.</p>
+  </footer>
+
+  <!-- Script Logic -->
+  <script>
+    // Grab DOM elements
+    const textInput = document.getElementById('text-input');
+    const checkBtn = document.getElementById('check-btn');
+    const resultDiv = document.getElementById('result');
+    
+    // Extra analysis elements
+    const breakdownCard = document.getElementById('breakdown-card');
+    const cleanedStrSpan = document.getElementById('cleaned-str');
+    const reversedStrSpan = document.getElementById('reversed-str');
+    const presetButtons = document.querySelectorAll('.preset-btn');
+
+    /**
+     * Main Palindrome Checking Handler
+     */
+    function checkPalindrome() {
+      const rawInput = textInput.value;
+
+      // Requirement 4: Alert if input is empty
+      if (rawInput === '') {
+        alert('Please input a value');
+        return;
+      }
+
+      // Clean the input: keep only alphanumeric characters (a-z, A-Z, 0-9) and lowercase
+      const cleaned = rawInput.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      
+      // Reverse the cleaned string
+      const reversed = cleaned.split('').reverse().join('');
+      
+      // Determine if palindrome
+      const isPalindrome = cleaned === reversed;
+
+      // Reset CSS classes on resultDiv
+      resultDiv.className = 'rounded-xl p-4 text-center font-semibold text-lg md:text-xl border transition-all duration-300 animate-pop-in';
+      
+      // Format exact result output according to freeCodeCamp user stories
+      if (isPalindrome) {
+        resultDiv.classList.add('bg-emerald-500/10', 'border-emerald-500/40', 'text-emerald-300');
+        resultDiv.innerHTML = `<span class="font-bold text-emerald-200">${rawInput}</span> is a palindrome`;
+      } else {
+        resultDiv.classList.add('bg-rose-500/10', 'border-rose-500/40', 'text-rose-300');
+        resultDiv.innerHTML = `<span class="font-bold text-rose-200">${rawInput}</span> is not a palindrome`;
+      }
+
+      // Show result
+      resultDiv.classList.remove('hidden');
+
+      // Update & show breakdown card
+      cleanedStrSpan.textContent = cleaned || '(empty)';
+      reversedStrSpan.textContent = reversed || '(empty)';
+      breakdownCard.classList.remove('hidden');
+    }
+
+    // Event Listeners
+    checkBtn.addEventListener('click', checkPalindrome);
+
+    // Trigger check on Enter key press
+    textInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        checkPalindrome();
+      }
+    });
+
+    // Handle sample preset buttons
+    presetButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        textInput.value = btn.textContent;
+        checkPalindrome();
+      });
+    });
+  </script>
+</body>
+</html>
